@@ -13,6 +13,9 @@
 <meta property="og:description" content="รีวิวจากลูกค้าจริงของร้าน Angellinaa">
 <meta property="og:url" content="https://angellinaa.netlify.app/">
 <meta property="og:image" content="https://angellinaa.netlify.app/og-image.png">
+<meta property="og:image:width" content="1080">
+<meta property="og:image:height" content="1080">
+<meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:alt" content="โลโก้ร้าน Sumintra">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://angellinaa.netlify.app/og-image.png">
@@ -634,6 +637,13 @@ body.inadmin nav,body.inadmin .topbar{display:none}
       <button class="save" data-sec="fav">บันทึกโลโก้</button>
     </div>
 
+    <div class="sec"><h3>🖼️ รูปตอนแชร์ลิงก์ (LINE / Facebook)</h3>
+      <div id="ogPrev" style="width:100%;aspect-ratio:1/1;max-width:280px;margin:0 auto;border-radius:14px;background:var(--bg);display:grid;place-items:center;overflow:hidden;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--mute)">ยังไม่มีรูป</div>
+      <input type="file" id="ogFile" accept="image/*" style="margin-top:10px"><button type="button" id="ogDel" style="border:0;background:none;color:var(--mute);cursor:pointer;margin-top:6px">ลบรูป</button>
+      <div class="lbl">รูปนี้จะขึ้นบนการ์ดเวลาแชร์ลิงก์ร้าน แนะนำรูปสี่เหลี่ยมจัตุรัส · แชร์ใหม่ให้ต่อท้ายลิงก์ ?v=2, ?v=3</div>
+      <button class="save" data-sec="og">บันทึกรูปตอนแชร์</button>
+    </div>
+
     <div class="sec"><h3>✨ รีวิวลอยขึ้นตอนเปิดเว็บ</h3>
       <label class="tog"><span>เปิด = รีวิวค่อยๆ ลอยขึ้นทีละอัน<br><small style="color:var(--mute)">ปิด = รีวิวขึ้นทันที ไม่เลื่อน</small></span><input type="checkbox" id="revAnim"></label>
       <button class="save" data-sec="rev">บันทึก</button>
@@ -1225,6 +1235,7 @@ function ctList(d){if(Array.isArray(d.contactsList))return d.contactsList;return
 function ctHTML(list,st){list=list.filter(x=>x.name||x.link);if(!list.length)return '<div class="empty">ยังไม่มีช่องทางติดต่อ</div>';
   return list.map(x=>`<a class="ct ${st||'ct1'}" href="${esc(x.link||'#')}" target="_blank" rel="noopener"><span class="ci">${x.img?`<img src="${esc(x.img)}" alt="">`:esc(x.icon||'🔗')}</span><b>${esc(x.name)}</b><span class="arr">›</span></a>`).join('')}
 function drawDone(big,t,sb,btn,o){big.innerHTML=o.doneImg?`<img src="${esc(o.doneImg)}" alt="">`:esc(o.doneIcon||'💖');t.textContent=o.doneTitle||'';sb.textContent=o.doneSub||'';btn.textContent=o.doneBtnTx||'ปิด'}
+function ogify(f){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const W=1080,H=1080,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,W,H);const k=Math.max(W/im.width,H/im.height),w=im.width*k,h=im.height*k;x.drawImage(im,(W-w)/2,(H-h)/2,w,h);let q=.82,u=c.toDataURL('image/jpeg',q);while(u.length>300000&&q>.4){q-=.1;u=c.toDataURL('image/jpeg',q)}res(u)};im.onerror=rej;im.src=fr.result};fr.onerror=rej;fr.readAsDataURL(f)})}
 function iconify(f,n=192){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=n;const x=c.getContext('2d');const k=Math.min(n/im.width,n/im.height),w=im.width*k,h=im.height*k;x.drawImage(im,(n-w)/2,(n-h)/2,w,h);res(c.toDataURL('image/png'))};im.onerror=rej;im.src=fr.result};fr.onerror=rej;fr.readAsDataURL(f)})}
 function setAv(el,url,name){el.style.backgroundImage=url?`url("${url}")`:'';el.textContent=url?'':(name||'S')[0]}
 let bTimer;
@@ -1544,6 +1555,10 @@ function drawAdmin(){
   const fvUp=()=>{$('favPrev').innerHTML=E.favicon?`<img src="${E.favicon}" style="width:100%;height:100%;object-fit:contain" alt="">`:'🌐'};fvUp();
   $('favFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;E.favicon=await iconify(f).catch(()=>E.favicon);e.target.value='';fvUp();$('favIco').href=E.favicon;toast('ใส่โลโก้แล้ว กดบันทึกด้วยนะคะ')};
   $('favDel').onclick=()=>{E.favicon='';fvUp()};
+  const ogUp=()=>{$('ogPrev').innerHTML=E.ogImg?`<img src="${E.ogImg}" style="width:100%;height:100%;object-fit:cover" alt="">`:'ยังไม่มีรูป'};ogUp();
+  $('ogFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;E.ogImg=await ogify(f).catch(()=>E.ogImg);e.target.value='';ogUp();toast('ใส่รูปแล้ว กดบันทึกด้วยนะคะ')};
+  $('ogDel').onclick=()=>{E.ogImg='';ogUp()};
+
   $('revAnim').checked=E.revAnim!==false;$('revAnim').onchange=()=>{E.revAnim=$('revAnim').checked};
   $('themeList').innerHTML=THEME_KEYS.map(([k,n,,d])=>`<div class="colrow" style="justify-content:space-between"><span style="font-size:14px">${n}</span><input type="color" data-tk="${k}" value="${E.theme[k]||d}"></div>`).join('');
   $('themeList').querySelectorAll('[data-tk]').forEach(el=>el.oninput=()=>{E.theme[el.dataset.tk]=el.value;applyTheme(E.theme)});
@@ -1574,6 +1589,7 @@ const SEC={
   eff:()=>({eff:E.eff}),
   rev:()=>({revAnim:$('revAnim').checked}),
   fav:()=>({favicon:E.favicon||''}),
+  og:()=>({ogImg:E.ogImg||''}),
   done:()=>({doneImg:E.doneImg||'',doneIcon:E.doneIcon||'💖',doneTitle:E.doneTitle||'',doneSub:E.doneSub||'',doneBtnTx:E.doneBtnTx||'ปิด'}),
   theme:()=>({theme:E.theme}),
   rmq:()=>({rmqOn:$('rmqOn').checked,rmqTitle:$('rmqTitle').value.trim(),rmqSpeed:+$('rmqSpeed').value,rmqDir:E.rmqDir||'left',rmqStyle:E.rmqStyle||'card',rmqPos:E.rmqPos||'below'}),
