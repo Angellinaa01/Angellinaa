@@ -570,6 +570,8 @@ body.inadmin nav,body.inadmin .topbar{display:none}
 </style>
 </head>
 <body>
+<div id="boot" style="position:fixed;inset:0;z-index:99999;background:#FFFBF5;display:grid;place-items:center;transition:opacity .3s"><div style="text-align:center;font-family:sans-serif;color:#C77B93"><div style="width:42px;height:42px;border:4px solid #F6D5DF;border-top-color:#E07FA0;border-radius:50%;margin:0 auto 12px;animation:bootspin .8s linear infinite"></div>กำลังโหลด...</div><style>@keyframes bootspin{to{transform:rotate(360deg)}}</style></div>
+
 
 <svg id="gdefs" width="0" height="0" style="position:absolute" aria-hidden="true"></svg>
 <div id="fxBg"></div>
@@ -631,7 +633,7 @@ body.inadmin nav,body.inadmin .topbar{display:none}
     <div class="sec"><h3>🌐 โลโก้ร้าน (ไอคอนบนแท็บเว็บ)</h3>
       <div style="display:flex;align-items:center;gap:14px">
         <div id="favPrev" style="width:64px;height:64px;border-radius:16px;background:var(--bg);display:grid;place-items:center;overflow:hidden;box-shadow:inset 0 0 0 1.5px var(--line);font-size:26px">🌐</div>
-        <div style="flex:1"><input type="file" id="favFile" accept="image/*"><button type="button" id="favDel" style="border:0;background:none;color:var(--mute);cursor:pointer;margin-top:6px">ลบโลโก้</button></div>
+        <div style="flex:1"><input type="file" id="favFile" accept="image/*"><br><button type="button" id="favDel" style="border:1.5px solid #E5A0A0;background:#FFF1F1;color:#C0504D;border-radius:12px;padding:8px 16px;font:inherit;font-size:14px;cursor:pointer;margin-top:8px;display:inline-block">🗑️ ลบโลโก้</button></div>
       </div>
       <div class="lbl">แนะนำรูปสี่เหลี่ยมจัตุรัส พื้นใส (PNG)</div>
       <button class="save" data-sec="fav">บันทึกโลโก้</button>
@@ -639,7 +641,7 @@ body.inadmin nav,body.inadmin .topbar{display:none}
 
     <div class="sec"><h3>🖼️ รูปตอนแชร์ลิงก์ (LINE / Facebook)</h3>
       <div id="ogPrev" style="width:100%;aspect-ratio:1/1;max-width:280px;margin:0 auto;border-radius:14px;background:var(--bg);display:grid;place-items:center;overflow:hidden;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--mute)">ยังไม่มีรูป</div>
-      <input type="file" id="ogFile" accept="image/*" style="margin-top:10px"><button type="button" id="ogDel" style="border:0;background:none;color:var(--mute);cursor:pointer;margin-top:6px">ลบรูป</button>
+      <input type="file" id="ogFile" accept="image/*" style="margin-top:10px"><br><button type="button" id="ogDel" style="border:1.5px solid #E5A0A0;background:#FFF1F1;color:#C0504D;border-radius:12px;padding:8px 16px;font:inherit;font-size:14px;cursor:pointer;margin-top:8px;display:inline-block">🗑️ ลบรูป</button>
       <div class="lbl">รูปนี้จะขึ้นบนการ์ดเวลาแชร์ลิงก์ร้าน แนะนำรูปสี่เหลี่ยมจัตุรัส · แชร์ใหม่ให้ต่อท้ายลิงก์ ?v=2, ?v=3</div>
       <button class="save" data-sec="og">บันทึกรูปตอนแชร์</button>
     </div>
@@ -875,7 +877,7 @@ function demoDB(){ // โหมดทดลอง: เก็บข้อมู�
   })};
 }
 let db;
-try{ if(LIVE){firebase.initializeApp(firebaseConfig);db=firebase.firestore()} else db=demoDB() }catch(e){ db=demoDB() }
+try{ if(LIVE){firebase.initializeApp(firebaseConfig);db=firebase.firestore();try{db.settings({experimentalAutoDetectLongPolling:true,merge:true})}catch(e){}} else db=demoDB() }catch(e){ db=demoDB() }
 const SHOP=db.collection('settings').doc('shop');
 const TS=()=>LIVE?firebase.firestore.FieldValue.serverTimestamp():null;
 const $=id=>document.getElementById(id);
@@ -1248,7 +1250,11 @@ function drawBanner(){
     $('banner').querySelectorAll('img').forEach((x,j)=>x.classList.toggle('on',j===i));
     $('banner').querySelectorAll('.dots i').forEach((x,j)=>x.classList.toggle('on',j===i))},3500)}
 }
-SHOP.onSnapshot(d=>{if(d.exists)S={...S,...migrate(d.data()),eff:fixEff(d.data().eff),contactsList:ctList(d.data()),fx:{},charm:fixCharm({...S.charm,...(d.data().charm||{})}),charms:(d.data().charmsJson?JSON.parse(d.data().charmsJson):(d.data().charms||[d.data().charm||S.charm])).map(c=>fixCharm({...c}))};apply()});
+const _ap=x=>{S={...S,...migrate(x),eff:fixEff(x.eff),contactsList:ctList(x),fx:{},charm:fixCharm({...S.charm,...(x.charm||{})}),charms:(x.charmsJson?JSON.parse(x.charmsJson):(x.charms||[x.charm||S.charm])).map(c=>fixCharm({...c}))};apply()};
+function hideBoot(){const b=document.getElementById('boot');if(b&&!b.dataset.h){b.dataset.h=1;b.style.opacity=0;setTimeout(()=>b.remove(),350)}}
+setTimeout(()=>{try{if(window.__SHOP){_ap(window.__SHOP);hideBoot();return}const c=localStorage.getItem('shopCache');if(c){_ap(JSON.parse(c));hideBoot()}}catch(e){}},0);
+setTimeout(hideBoot,12000);
+SHOP.onSnapshot(d=>{if(d.exists){const x=d.data();_ap(x);try{const y={...x};delete y.ogImg;localStorage.setItem('shopCache',JSON.stringify(y))}catch(e){}}else apply();hideBoot()},()=>hideBoot());
 function fixCharm(c){if(c.ribbon===true)c.ribbon='satin';if(c.ribbon===false)c.ribbon='';if(c.size==null)c.size=100;if(c.tilt==null)c.tilt=0;if(c.ry==null)c.ry=0;if(!c.hook)c.hook='heart';if(c.x==null)c.x=0;if(!c.mode)c.mode='lr';if(!c.layer)c.layer='front';if(c.speed==null)c.speed=5;if(!c.ribbonCount)c.ribbonCount=1;if(c.top==null)c.top=40;if(!c.strands||!c.strands.length)c.strands=[['chain','spark'],['pink','bowW','starP','heartW','clear','bell'],['pearlS','pink','pearlS','starS']];delete c.items;return c}
 apply();
 // ค่อยๆ เลื่อนขึ้นทีละส่วนตอนเปิดเว็บ
@@ -1557,7 +1563,7 @@ function drawAdmin(){
   $('favDel').onclick=()=>{E.favicon='';fvUp()};
   const ogUp=()=>{$('ogPrev').innerHTML=E.ogImg?`<img src="${E.ogImg}" style="width:100%;height:100%;object-fit:cover" alt="">`:'ยังไม่มีรูป'};ogUp();
   $('ogFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;E.ogImg=await ogify(f).catch(()=>E.ogImg);e.target.value='';ogUp();toast('ใส่รูปแล้ว กดบันทึกด้วยนะคะ')};
-  $('ogDel').onclick=()=>{E.ogImg='';ogUp()};
+  $('ogDel').onclick=()=>{if(!E.ogImg)return;if(!confirm('ลบรูปตอนแชร์?'))return;E.ogImg='';ogUp();SHOP.set({ogImg:''},{merge:true}).then(()=>toast('ลบรูปแล้ว ✓')).catch(()=>toast('ลบไม่สำเร็จ'))};
 
   $('revAnim').checked=E.revAnim!==false;$('revAnim').onchange=()=>{E.revAnim=$('revAnim').checked};
   $('themeList').innerHTML=THEME_KEYS.map(([k,n,,d])=>`<div class="colrow" style="justify-content:space-between"><span style="font-size:14px">${n}</span><input type="color" data-tk="${k}" value="${E.theme[k]||d}"></div>`).join('');
